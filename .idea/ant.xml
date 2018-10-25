@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AntConfiguration">
+    <buildFile url="file://$PROJECT_DIR$/plaunchpadmini.xml">
+      <properties>
+        <property name="idea.home" value="C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2018.2.5\bin" />
+      </properties>
+    </buildFile>
+  </component>
+</project>

@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="plaunchpadmini" default="all">
+  
+  
+  <property file="plaunchpadmini.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*.yarb/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.war"/>
+    <include name="*.swc"/>
+    <include name="*.apk"/>
+    <include name="*.zip"/>
+    <include name="*.egg"/>
+    <include name="*.ane"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.1.8" value="${jdk.home.1.8}/bin"/>
+  <path id="jdk.classpath.1.8">
+    <fileset dir="${jdk.home.1.8}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/access-bridge-64.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunmscapi.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.1.8}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.1.8}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.1.8"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.processing.classpath">
+    <fileset dir="${basedir}/../../../processing-3.4/core/library">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <path id="library.processing.sound_(native).classpath">
+    <fileset dir="${basedir}/../../Processing/libraries/sound/library">
+      <patternset refid="library.patterns"/>
+    </fileset>
+  </path>
+  
+  <!-- Modules -->
+  
+  
+  <!-- Module launchPadMiniClient -->
+  
+  <dirname property="module.launchpadminiclient.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.launchpadminiclient" value="${jdk.home.1.8}"/>
+  <property name="module.jdk.bin.launchpadminiclient" value="${jdk.bin.1.8}"/>
+  <property name="module.jdk.classpath.launchpadminiclient" value="jdk.classpath.1.8"/>
+  
+  <property name="compiler.args.launchpadminiclient" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="launchpadminiclient.output.dir" value="${module.launchpadminiclient.basedir}/out/production/launchPadMiniClient"/>
+  <property name="launchpadminiclient.testoutput.dir" value="${module.launchpadminiclient.basedir}/out/test/launchPadMiniClient"/>
+  
+  <path id="launchpadminiclient.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="launchpadminiclient.module.production.classpath">
+    <path refid="${module.jdk.classpath.launchpadminiclient}"/>
+    <path refid="library.processing.classpath"/>
+  </path>
+  
+  <path id="launchpadminiclient.runtime.production.module.classpath">
+    <pathelement location="${launchpadminiclient.output.dir}"/>
+    <path refid="library.processing.classpath"/>
+  </path>
+  
+  <path id="launchpadminiclient.module.classpath">
+    <path refid="${module.jdk.classpath.launchpadminiclient}"/>
+    <pathelement location="${launchpadminiclient.output.dir}"/>
+    <path refid="library.processing.classpath"/>
+    <pathelement location="${path.variable.maven_repository}/org/apiguardian/apiguardian-api/1.0.0/apiguardian-api-1.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/junit/jupiter/junit-jupiter-api/5.0.0/junit-jupiter-api-5.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/junit/platform/junit-platform-commons/1.0.0/junit-platform-commons-1.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/opentest4j/opentest4j/1.0.0/opentest4j-1.0.0.jar"/>
+  </path>
+  
+  <path id="launchpadminiclient.runtime.module.classpath">
+    <pathelement location="${launchpadminiclient.testoutput.dir}"/>
+    <pathelement location="${launchpadminiclient.output.dir}"/>
+    <path refid="library.processing.classpath"/>
+    <pathelement location="${path.variable.maven_repository}/org/apiguardian/apiguardian-api/1.0.0/apiguardian-api-1.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/junit/jupiter/junit-jupiter-api/5.0.0/junit-jupiter-api-5.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/junit/platform/junit-platform-commons/1.0.0/junit-platform-commons-1.0.0.jar"/>
+    <pathelement location="${path.variable.maven_repository}/org/opentest4j/opentest4j/1.0.0/opentest4j-1.0.0.jar"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.launchpadminiclient">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.launchpadminiclient">
+    <patternset refid="excluded.from.module.launchpadminiclient"/>
+  </patternset>
+  
+  <path id="launchpadminiclient.module.sourcepath">
+    <dirset dir="${module.launchpadminiclient.basedir}">
+      <include name="launchPadMiniClient"/>
+    </dirset>
+  </path>
+  
+  <path id="launchpadminiclient.module.test.sourcepath">
+    <dirset dir="${module.launchpadminiclient.basedir}">
+      <include name="tests"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.launchpadminiclient" depends="compile.module.launchpadminiclient.production,compile.module.launchpadminiclient.tests" description="Compile module launchPadMiniClient"/>
+  
+  <target name="compile.module.launchpadminiclient.production" description="Compile module launchPadMiniClient; production classes">
+    <mkdir dir="${launchpadminiclient.output.dir}"/>
+    <javac destdir="${launchpadminiclient.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.launchpadminiclient}/javac">
+      <compilerarg line="${compiler.args.launchpadminiclient}"/>
+      <bootclasspath refid="launchpadminiclient.module.bootclasspath"/>
+      <classpath refid="launchpadminiclient.module.production.classpath"/>
+      <src refid="launchpadminiclient.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.launchpadminiclient"/>
+    </javac>
+    
+    <copy todir="${launchpadminiclient.output.dir}">
+      <fileset dir="/">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.launchpadminiclient.tests" depends="compile.module.launchpadminiclient.production" description="compile module launchPadMiniClient; test classes" unless="skip.tests">
+    <mkdir dir="${launchpadminiclient.testoutput.dir}"/>
+    <javac destdir="${launchpadminiclient.testoutput.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.launchpadminiclient}/javac">
+      <compilerarg line="${compiler.args.launchpadminiclient}"/>
+      <bootclasspath refid="launchpadminiclient.module.bootclasspath"/>
+      <classpath refid="launchpadminiclient.module.classpath"/>
+      <src refid="launchpadminiclient.module.test.sourcepath"/>
+      <patternset refid="excluded.from.compilation.launchpadminiclient"/>
+    </javac>
+    
+    <copy todir="${launchpadminiclient.testoutput.dir}">
+      <fileset dir="${module.launchpadminiclient.basedir}/tests">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="clean.module.launchpadminiclient" description="cleanup module">
+    <delete dir="${launchpadminiclient.output.dir}"/>
+    <delete dir="${launchpadminiclient.testoutput.dir}"/>
+  </target>
+  
+  
+  <!-- Module launchPadMiniApp -->
+  
+  <dirname property="module.launchpadminiapp.basedir" file="${ant.file}"/>
+  
+  
+  <property name="module.jdk.home.launchpadminiapp" value="${jdk.home.1.8}"/>
+  <property name="module.jdk.bin.launchpadminiapp" value="${jdk.bin.1.8}"/>
+  <property name="module.jdk.classpath.launchpadminiapp" value="jdk.classpath.1.8"/>
+  
+  <property name="compiler.args.launchpadminiapp" value="-encoding UTF-8 -source 1.8 -target 1.8 ${compiler.args}"/>
+  
+  <property name="launchpadminiapp.output.dir" value="${module.launchpadminiapp.basedir}/out/production/launchPadMiniApp"/>
+  <property name="launchpadminiapp.testoutput.dir" value="${module.launchpadminiapp.basedir}/out/test/launchPadMiniApp"/>
+  
+  <path id="launchpadminiapp.module.bootclasspath">
+    <!-- Paths to be included in compilation bootclasspath -->
+  </path>
+  
+  <path id="launchpadminiapp.module.production.classpath">
+    <path refid="${module.jdk.classpath.launchpadminiapp}"/>
+    <path refid="library.processing.classpath"/>
+    <pathelement location="${launchpadminiclient.output.dir}"/>
+    <path refid="library.processing.sound_(native).classpath"/>
+  </path>
+  
+  <path id="launchpadminiapp.runtime.production.module.classpath">
+    <pathelement location="${launchpadminiapp.output.dir}"/>
+    <path refid="library.processing.classpath"/>
+    <path refid="launchpadminiclient.runtime.production.module.classpath"/>
+    <path refid="library.processing.sound_(native).classpath"/>
+  </path>
+  
+  <path id="launchpadminiapp.module.classpath">
+    <path refid="${module.jdk.classpath.launchpadminiapp}"/>
+    <pathelement location="${launchpadminiapp.output.dir}"/>
+    <path refid="library.processing.classpath"/>
+    <pathelement location="${launchpadminiclient.testoutput.dir}"/>
+    <pathelement location="${launchpadminiclient.output.dir}"/>
+    <path refid="library.processing.sound_(native).classpath"/>
+  </path>
+  
+  <path id="launchpadminiapp.runtime.module.classpath">
+    <pathelement location="${launchpadminiapp.testoutput.dir}"/>
+    <pathelement location="${launchpadminiapp.output.dir}"/>
+    <path refid="library.processing.classpath"/>
+    <path refid="launchpadminiclient.runtime.module.classpath"/>
+    <path refid="library.processing.sound_(native).classpath"/>
+  </path>
+  
+  
+  <patternset id="excluded.from.module.launchpadminiapp">
+    <patternset refid="ignored.files"/>
+  </patternset>
+  
+  <patternset id="excluded.from.compilation.launchpadminiapp">
+    <patternset refid="excluded.from.module.launchpadminiapp"/>
+  </patternset>
+  
+  <path id="launchpadminiapp.module.sourcepath">
+    <dirset dir="${module.launchpadminiapp.basedir}/launchPadMiniApp">
+      <include name="src"/>
+    </dirset>
+  </path>
+  
+  
+  <target name="compile.module.launchpadminiapp" depends="compile.module.launchpadminiapp.production,compile.module.launchpadminiapp.tests" description="Compile module launchPadMiniApp"/>
+  
+  <target name="compile.module.launchpadminiapp.production" depends="compile.module.launchpadminiclient" description="Compile module launchPadMiniApp; production classes">
+    <mkdir dir="${launchpadminiapp.output.dir}"/>
+    <javac destdir="${launchpadminiapp.output.dir}" debug="${compiler.debug}" nowarn="${compiler.generate.no.warnings}" memorymaximumsize="${compiler.max.memory}" fork="true" executable="${module.jdk.bin.launchpadminiapp}/javac">
+      <compilerarg line="${compiler.args.launchpadminiapp}"/>
+      <bootclasspath refid="launchpadminiapp.module.bootclasspath"/>
+      <classpath refid="launchpadminiapp.module.production.classpath"/>
+      <src refid="launchpadminiapp.module.sourcepath"/>
+      <patternset refid="excluded.from.compilation.launchpadminiapp"/>
+    </javac>
+    
+    <copy todir="${launchpadminiapp.output.dir}">
+      <fileset dir="${module.launchpadminiapp.basedir}/launchPadMiniApp/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+  </target>
+  
+  <target name="compile.module.launchpadminiapp.tests" depends="compile.module.launchpadminiapp.production" description="compile module launchPadMiniApp; test classes" unless="skip.tests"/>
+  
+  <target name="clean.module.launchpadminiapp" description="cleanup module">
+    <delete dir="${launchpadminiapp.output.dir}"/>
+    <delete dir="${launchpadminiapp.testoutput.dir}"/>
+  </target>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.launchpadminiclient, clean.module.launchpadminiapp, clean.artifact.processing_release" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.launchpadminiclient, compile.module.launchpadminiapp" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.processing_release" value="${basedir}/out/artifacts"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.launchPadMiniClient.zip" value="${artifacts.temp.dir}/launchPadMiniClient.zip"/>
+  </target>
+  
+  <target name="clean.artifact.processing_release" description="clean Processing Release artifact output">
+    <delete dir="${artifact.output.processing_release}"/>
+  </target>
+  
+  <target name="artifact.processing_release" depends="init.artifacts, compile.module.launchpadminiclient, compile.module.launchpadminiapp" description="Build &#39;Processing Release&#39; artifact">
+    <mkdir dir="${artifact.output.processing_release}"/>
+    <ant antfile="" target="null" dir="">
+      <property name="artifact.output.path" value="${artifact.output.processing_release}"/>
+    </ant>
+    <zip destfile="${temp.jar.path.launchPadMiniClient.zip}">
+      <zipfileset dir="${launchpadminiapp.output.dir}" prefix="library"/>
+      <zipfileset dir="${basedir}/reference" prefix="reference"/>
+      <zipfileset dir="${basedir}/examples" prefix="examples"/>
+      <zipfileset file="${basedir}/library.properties"/>
+    </zip>
+    <mkdir dir="${artifact.output.processing_release}/launchPadMiniClient"/>
+    <mkdir dir="${artifact.output.processing_release}/launchPadMiniClient/library"/>
+    <copy todir="${artifact.output.processing_release}/launchPadMiniClient/library">
+      <fileset dir="${launchpadminiclient.output.dir}"/>
+    </copy>
+    <mkdir dir="${artifact.output.processing_release}/launchPadMiniClient/reference"/>
+    <copy todir="${artifact.output.processing_release}/launchPadMiniClient/reference">
+      <fileset dir="${basedir}/reference"/>
+    </copy>
+    <mkdir dir="${artifact.output.processing_release}/launchPadMiniClient/examples"/>
+    <copy todir="${artifact.output.processing_release}/launchPadMiniClient/examples">
+      <fileset dir="${basedir}/examples"/>
+    </copy>
+    <copy file="${temp.jar.path.launchPadMiniClient.zip}" tofile="${artifact.output.processing_release}/launchPadMiniClient.zip"/>
+    <copy file="${basedir}/library.properties" tofile="${artifact.output.processing_release}/library.properties"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.processing_release" description="Build all artifacts">
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>

@@ -1,0 +1,41 @@
+<component name="ArtifactManager">
+  <artifact build-on-make="true" name="Processing Release">
+    <output-path>$PROJECT_DIR$/out/artifacts/</output-path>
+    <root id="root">
+      <element id="directory" name="launchPadMiniClient">
+        <element id="directory" name="library">
+          <element id="archive" name="launchPadMiniClient.jar">
+            <element id="directory" name="META-INF">
+              <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
+            </element>
+            <element id="module-output" name="launchPadMiniClient" />
+          </element>
+        </element>
+        <element id="directory" name="reference">
+          <element id="dir-copy" path="$PROJECT_DIR$/reference" />
+        </element>
+        <element id="directory" name="examples">
+          <element id="dir-copy" path="$PROJECT_DIR$/examples" />
+        </element>
+      </element>
+      <element id="archive" name="launchPadMiniClient.zip">
+        <element id="directory" name="library">
+          <element id="module-output" name="launchPadMiniApp" />
+          <element id="archive" name="launchPadMiniClient.jar">
+            <element id="directory" name="META-INF">
+              <element id="file-copy" path="$PROJECT_DIR$/src/META-INF/MANIFEST.MF" />
+            </element>
+          </element>
+        </element>
+        <element id="directory" name="reference">
+          <element id="dir-copy" path="$PROJECT_DIR$/reference" />
+        </element>
+        <element id="directory" name="examples">
+          <element id="dir-copy" path="$PROJECT_DIR$/examples" />
+        </element>
+        <element id="file-copy" path="$PROJECT_DIR$/library.properties" />
+      </element>
+      <element id="file-copy" path="$PROJECT_DIR$/library.properties" />
+    </root>
+  </artifact>
+</component>
