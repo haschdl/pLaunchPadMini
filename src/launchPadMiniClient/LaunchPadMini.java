@@ -6,6 +6,7 @@ import javax.sound.midi.*;
 import java.lang.reflect.*;
 
 import static processing.core.PApplet.floor;
+import static processing.core.PApplet.parseByte;
 import static processing.core.PApplet.println;
 
 /***
@@ -14,14 +15,15 @@ import static processing.core.PApplet.println;
  * by attaching pads to variables.
  *
  */
-public class LaunchPadMini {
+public class LaunchPadMini implements LaunchPadListener {
 
     private static final String DEVICE_NAME = "Launchpad Mini";
+
+    public LOG_MODE LogMode = LOG_MODE.ERROR;
 
     private Method controllerChangedEventMethod, padChangedEventMethod;
     private static final String controlChangedEventName = "launchControllerChanged";
     private static final String padChangedEventName = "launchControllerPadChanged";
-
 
 
     private MidiDevice deviceIn;
@@ -29,14 +31,12 @@ public class LaunchPadMini {
     private LaunchPadMiniReceiver receiver;
 
     public static final int PAD_COUNT = 81;
-    private boolean[] padStatus = new boolean[PAD_COUNT];
 
     public MATRIX_MODE matrix_mode = MATRIX_MODE.MATRIX_8x8;
-
+    public PAD_MODE pad_mode = PAD_MODE.TOGGLE;
     private PApplet parent;
 
-    private LED_COLOR[] matrix = new LED_COLOR[PAD_COUNT];
-
+    private LedMatrix matrix = new LedMatrix(PAD_COUNT);
 
 
     public LaunchPadMini(PApplet parent) throws MidiUnavailableException {
@@ -82,6 +82,7 @@ public class LaunchPadMini {
         deviceOut.open();
 
         receiver = new LaunchPadMiniReceiver(this, deviceOut);
+        receiver.addListener(this);
 
         deviceIn.getTransmitter().setReceiver(receiver);
 
@@ -90,7 +91,7 @@ public class LaunchPadMini {
         reset();
 
 
-        println( DEVICE_NAME +  " ready!");
+        println(DEVICE_NAME + " ready!");
     }
 
     /***
@@ -101,41 +102,54 @@ public class LaunchPadMini {
     public void reset() {
         try {
             deviceOut.getReceiver().send(Utils.getResetMessage(), 0);
-            for(int i = 0; i< PAD_COUNT;i++) {
-                matrix[i] = LED_COLOR.OFF;
+            for (int i = 0; i < PAD_COUNT; i++) {
+                matrix.set(i, LED_COLOR.OFF);
             }
-        }
-        catch (MidiUnavailableException e)
-        {
+        } catch (MidiUnavailableException e) {
             println(String.format("%s: Error sending reset message!", DEVICE_NAME));
         }
     }
+
     /***
-     * The status of a given pad as a boolean value.
-     * Alternative, you can get the status of a pad a int value with {@link LaunchPadMini#getPadInt(int)}
+     * The state of a given pad as a boolean value.
+     * Alternative, you can get the status of a pad a int
+     * value with {@link LaunchPadMini#getPadInt(int)}
      * @return True if the pad is "on", False otherwise.
      */
     public boolean getPad(int ix) {
-        return padStatus[ix];
+        return (matrix.get(ix) != LED_COLOR.OFF);
+    }
+
+    public LED_COLOR getPad(int col, int row) {
+
+        return matrix.get(col, row);
     }
 
     /***
-     * The status of a given pad as int value.
+     * The state of a given pad as int value (0 or 1).
+     * See also {@link LaunchPadMini#getPad(int) getPad(int)}
+     * which returns the state as a boolean.
      * @param ix The index of the pad to check.
      * @return 1 if the pad is on, 0 otherwise.
      */
-    public int getPadInt(int ix ) {
-        return padStatus[ix] ? 1 : 0;
+    public int getPadInt(int ix) {
+        return matrix.get(ix).asBoolean() ? 0 : 1;
     }
 
-    public void setPad(int ix, boolean value) {
-        if (padStatus[ix] != value) {
-            invertPad(ix);
+    public void setPad(int col, int row, boolean value) {
+        boolean currVal = matrix.get(col, row).asBoolean();
+
+        if (currVal != value) {
+            togglePad(col, row);
         }
     }
 
-
-    public void turnOnAllLeds(BRIGHTNESS level)  {
+    /**
+     * Turns on all LED lights of the controller, including the control buttons.
+     *
+     * @param level A valid brightness level (see {@link BRIGHTNESS}.
+     */
+    public void turnOnAllLeds(BRIGHTNESS level) {
         //Hex version B0h, 00h, 7D-7Fh.
         //Decimal version 176, 0, 125-127.
         //The last byte can take one of three values:
@@ -143,7 +157,7 @@ public class LaunchPadMini {
         //  7Dh 125     Low brightness test.
         //  7Eh 126     Medium brightness test.
         //  7Fh 127     Full brightness test.
-        receiver.sendShortMessage((byte)0xB0, (byte)0x00, level.code() );
+        receiver.sendShortMessage((byte) 0xB0, (byte) 0x00, level.code());
     }
 
     /**
@@ -151,60 +165,37 @@ public class LaunchPadMini {
      *
      * @param row
      */
-    public void invertPad(int row, int col) {
-        invertPad(row * 9 + col);
-    }
-
-
-
-    protected int getNote(int ix) {
-        int row = floor(ix / 9);
-        int col = ix % 9;
-        return 16 * row+col;
-    }
-
-    public void invertPad(int ix) {
-
-
-        boolean curValue = padStatus[ix];
-        padStatus[ix] = !curValue;
-
-        receiver.sendLed(!curValue, getNote(ix));
+    public void togglePad(int col, int row) {
+        boolean currVal = matrix.get(col, row).asBoolean();
+        LED_COLOR newColor = currVal ? LED_COLOR.OFF : LED_COLOR.RED_FULL;
+        setLedColor(col, row, newColor);
         midiLaunchControllerChanged();
-        padChanged(ix);
+        //padChanged(ix);
     }
 
-    public void setLedColor(int ix, LED_COLOR color) {
-        receiver.setLedColor(getNote(ix),color);
-    }
 
     public void setLedColor(int x, int y, LED_COLOR color) {
-        if (x>9 || y > 9)
-            throw new IllegalArgumentException(String.format("Both x and y must be smaller than 9 (0-8). x: %d  y:%d",x,y));
+        if (x > 9 || y > 9)
+            throw new IllegalArgumentException(String.format("Both x and y must be smaller than 9 (0-8). x: %d  y:%d", x, y));
 
-        int ix;
-        if(matrix_mode == MATRIX_MODE.MATRIX_8x8 ||matrix_mode == MATRIX_MODE.MATRIX_9x8) {
-            String x_coor = "" + x;
-            String y_coor = "" + y;
-            String yx_coor = y_coor + x_coor;
-            ix = Integer.parseInt(yx_coor, 16);
+        if (matrix.get(x, y) == color)
+            return;
 
-            //updates only if different.
-            //TODO: improve
-            if(matrix[y*8+x] != color) {
-                receiver.setLedColor(ix, color);
-                matrix[y*8+x] = color;
-            }
-        }
-        else if(matrix_mode == MATRIX_MODE.MATRIX_9x9) {
+
+        if (matrix_mode == MATRIX_MODE.MATRIX_8x8 || matrix_mode == MATRIX_MODE.MATRIX_9x8) {
+            receiver.setLedColor(x, y, color);
+            matrix.set(x, y, color);
+
+        } else if (matrix_mode == MATRIX_MODE.MATRIX_9x9) {
             //First row is control buttons
+            matrix.set(x, y, color);
+
             if (y == 0)
-                setControlColor((byte)x, color);
+                setControlColor((byte) x, color);
             else
-                setLedColor((byte)x, (byte)(y-1), color);
+                receiver.setLedColor((byte) x, (byte) (y - 1), color);
         }
     }
-
 
 
     /***
@@ -245,8 +236,6 @@ public class LaunchPadMini {
     }
 
 
-
-
     /***
      * Clean-up operations executed when when
      * the parent sketch shuts down.
@@ -254,12 +243,30 @@ public class LaunchPadMini {
     public void close() {
         try {
             deviceOut.getReceiver().send(Utils.getResetMessage(), 0);
-        }
-        catch(MidiUnavailableException e) {
-            println(String.format("%s: error sending reset message. %s " ,DEVICE_NAME, e));
+        } catch (MidiUnavailableException e) {
+            println(String.format("%s: error sending reset message. %s ", DEVICE_NAME, e));
         }
         if (deviceIn.isOpen()) deviceIn.close();
 
         if (deviceOut.isOpen()) deviceOut.close();
+    }
+
+    @Override
+    public void padPressed(int col, int row) {
+        if (this.LogMode == LOG_MODE.VERBOSE)
+            println(String.format("Pad pressed at (%d,%d)! Changing color...", col, row));
+
+
+        if (pad_mode == PAD_MODE.TOGGLE)
+            togglePad(col, row);
+        else if (pad_mode == PAD_MODE.LOOP)
+            updatePadToNext(col, row);
+
+    }
+
+    public void updatePadToNext(int col, int row) {
+        setLedColor(col, row, matrix.get(col, row).next());
+        midiLaunchControllerChanged();
+        //padChanged(ix);
     }
 }

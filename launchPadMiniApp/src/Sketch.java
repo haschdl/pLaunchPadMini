@@ -1,6 +1,4 @@
-import launchPadMiniClient.BRIGHTNESS;
-import launchPadMiniClient.LED_COLOR;
-import launchPadMiniClient.LaunchPadMini;
+import launchPadMiniClient.*;
 import processing.core.*;
 import processing.event.KeyEvent;
 
@@ -13,30 +11,9 @@ import processing.sound.*;
 
 public class Sketch extends PApplet {
 
-    // Declare the processing sound variables
-    SoundFile sample;
-    FFT fft;
-    AudioDevice device;
-    AudioIn audioIn;
-    // Declare a scaling factor
-    int scale = 10;
-
-    // Define how many FFT bands we want
-    int bands = 8;
-    int samples = (int)pow(2,bands); //2^8
-
-    // declare a drawing variable for calculating rect width
-    float r_width;
-
-    // Create a smoothing vector
-    float[] sum = new float[samples];
-
-    // Create a smoothing factor
-    float smooth_factor = 0.05f;
-    PGraphics backgroundBuffer;
 
     LaunchPadMini controller;
-    ArrayList<PImage> images;
+
 
     public static void main(String[] args) {
         PApplet.main(new String[]{"Sketch",});
@@ -45,145 +22,89 @@ public class Sketch extends PApplet {
 
 
     public void settings() {
-        size(800, 600, P2D);
+        size(800, 800, P2D);
 
     }
 
 
     public void setup() {
         prepareExitHandler();
-        backgroundBuffer = createGraphics(width, height);
-        images = loadImages("c:/temp/emoji");
 
-        //frameRate(10);
         try {
             controller = new LaunchPadMini(this);
-
-            for (int i = 0; i < controller.PAD_COUNT; i++) {
-                controller.setPad(i, true);
-            }
-            for (int i = 0; i < controller.PAD_COUNT; i++) {
-                controller.setPad(i, false);
-            }
-            controller.turnOnAllLeds(BRIGHTNESS.LOW);
-            controller.turnOnAllLeds(BRIGHTNESS.MEDIUM);
-            controller.turnOnAllLeds(BRIGHTNESS.FULL);
-
+            controller.pad_mode = PAD_MODE.LOOP;
+            controller.LogMode = LOG_MODE.VERBOSE;
         } catch (Exception e) {
-            println(e);
-            System.exit(0);
+            println("Unfortunately we could not detect that Launch Pad MINI is connected to this computer :(");
         }
-
-        // If the Buffersize is larger than the FFT Size, the FFT will fail
-        // so we set Buffersize equal to bands
-        device = new AudioDevice(this, 44000, samples);
-
-        // Calculate the width of the rects depending on how many bands we have
-        r_width = width / (float) bands;
-
-        //Load and play a soundfile and loop it. This has to be called
-        // before the FFT is created.
-        sample = new SoundFile(this, "c:/temp/emoji/orchestra.mp3");
-        sample.rate(.5f);
-        sample.loop();
-
-        // Create and patch the FFT analyzer
-        fft = new FFT(this, samples);
-
-        // Create the Input stream
-        audioIn= new AudioIn(this, 0);
-        //audioIn.start();
-        //fft.input(audioIn);
-        fft.input(sample);
+        textAlign(CENTER);
 
 
     }
 
-
-    public ArrayList<PImage> loadImages(String dir) {
-        File[] files = new File(dir).listFiles();
-        ArrayList<PImage> images = new ArrayList<PImage>();
-        for (File file : files) {
-            if (file.isDirectory()) {
-                continue;
-
-            } else {
-                System.out.println("File: " + file.getAbsolutePath());
-                images.add(loadImage(file.getAbsolutePath()));
-
-            }
-        }
-        return images;
-    }
 
     public void draw() {
 
-        surface.setTitle(String.format("%d fps, frames: %d", round(frameRate), frameCount));
-        clear();
-        translate(0,-100);
+        background(0);
+        translate(20, 20);
+        stroke(255);
+        strokeWeight(3);
+        float s = width / 18; //2 times the number of buttons along the X axis
+        translate(s / 2, s / 2);
 
-        // controller.setLedColor(ix, launchPadMiniClient.LED_COLOR.getRandom());
-        controller.reset();
-
-
-
-
-/*
- int ix = (frameCount - 1) % controller.PAD_COUNT;
-int j = frameCount % images.size();
- controller.setControlColor((byte)(j % 8), launchPadMiniClient.LED_COLOR.RED_FULL);
-
-        PImage img = images.get(j);
-        img.resize(8, 8);
-        img.loadPixels();
-
-        for (int i = 0; i < img.pixels.length; i++) {
-            int c = img.pixels[i];
-            image(img,0,0);
-            int A = (c >> 24) & 0xFF;
-            int R = (c >> 16) & 0xFF;
-            int G = (c >> 8) & 0xFF;
-                    int B = c & 0xFF;
-            double bright = 255-A; //ImageUtils.perceivedL(R , G, B);
-
-            //println(String.format("Color(ARGB): %d,%d,%d,%d, Brightness: %.2f", A,R,G,B, bright));
-            int x = i % 8;
-            int y = i / 8;
-            controller.setLedColor(x, y, launchPadMiniClient.LED_COLOR.OFF);
-            if (bright < 50)
-                controller.setLedColor(x, y, launchPadMiniClient.LED_COLOR.AMBER_LOW);
-            else if (bright < 100)
-                controller.setLedColor(x, y, launchPadMiniClient.LED_COLOR.AMBER_FULL);
-            else if (bright < 180)
-                controller.setLedColor(x, y, launchPadMiniClient.LED_COLOR.YELLOW_FULL);
-            else if (bright < 255)
-                controller.setLedColor(x, y, launchPadMiniClient.LED_COLOR.RED_FULL);
-        }
-        */
-        fft.analyze();
-
-        for (int ix = 0; ix < bands; ix++) {
-            int i = (int)pow(ix,2);
-            // smooth the FFT data by smoothing factor
-            sum[i] += (fft.spectrum[i] - sum[i]) * smooth_factor;
-
-            // draw the rects with a scale factor
-            float x = i * r_width;
-            float y = height;
-            float h = sum[i] *scale  ;
-            rect(x, y, r_width, -h*height);
-
-            float map = h * 5 * 8;
-
-            for (int j = 0; j < map; j++) {
-                controller.setLedColor(ix, 8 - j, LED_COLOR.RED_FULL);
-
-            }
-        }
+        drawControlButtoms(s);
+        drawPads(s);
 
 
     }
 
+
+    /**
+     * Draws the control buttons (round buttons on top row).
+     */
+    void drawControlButtoms(float s) {
+        fill(80);
+        //top row
+        for (int i = 0; i < 8; i++) {
+            ellipse(2 * s * (i % 8), 0, s, s);
+        }
+    }
+
+    /**
+     * Draws the pads of the controller.
+     */
+    void drawPads(float s) {
+        translate(0, s * 2);
+        rectMode(CENTER);
+
+        for (int col = 0; col < 9; col++) {
+
+            for (int row = 0; row < 8; row++) {
+                fill(255);
+
+                float x = 2 * s * col;
+                float y = 2 * s * row;
+
+                if (col < 8)
+                    rect(x, y, s, s);
+                else
+                    ellipse(x, y, s, s);
+
+                LED_COLOR pad = controller.getPad(col, row);
+
+                if (pad.asBoolean()) {
+                    fill(pad.asColor());
+                    if (col < 8)
+                        rect(x, y, s, s);
+                    else
+                        ellipse(x, y, s, s);
+                }
+
+                fill(255);
+                text(round(row * 9 + col), x, y + s);
+            }
+        }
+    }
 
     @Override
     public void keyTyped(KeyEvent event) {
