@@ -1,11 +1,13 @@
 package launchPadMiniClient;
 
+import launchPadMiniClient.receiver.LaunchPadListener;
+import launchPadMiniClient.receiver.LaunchPadMiniReceiver;
+import launchPadMiniClient.receiver.MessageConstants;
 import processing.core.*;
 
 import javax.sound.midi.*;
 import java.lang.reflect.*;
 
-import static processing.core.PApplet.floor;
 import static processing.core.PApplet.parseByte;
 import static processing.core.PApplet.println;
 
@@ -160,6 +162,10 @@ public class LaunchPadMini implements LaunchPadListener {
         receiver.sendShortMessage((byte) 0xB0, (byte) 0x00, level.code());
     }
 
+    public void setLedFlashing() {
+        receiver.sendShortMessage(MessageConstants.FLASHING_ON);
+    }
+
     /**
      * Inverts the value and turns the given pad on and off.
      *
@@ -172,6 +178,7 @@ public class LaunchPadMini implements LaunchPadListener {
         midiLaunchControllerChanged();
         //padChanged(ix);
     }
+
 
 
     public void setLedColor(int x, int y, LED_COLOR color) {
@@ -197,7 +204,40 @@ public class LaunchPadMini implements LaunchPadListener {
         }
     }
 
+    /***
+     * Irrespective of the mapping chosen, this will update the 8x8 grid in left-to-right, top-to-bottom
+     * order, then the eight scene launch buttons in top-to-bottom order, and finally the eight
+     * Automap/Live buttons in left-to-right order (these are otherwise inaccessible using note-on
+     * messages). Overflowing data will be ignored.
+     *
+     * @param colors
+     */
+    public void rapidLedUpdate(LED_COLOR[] colors) {
+        /***
+         * Rapid LED update: Sending a MIDI channel 3 note-on message enters a special
+         * LED update mode. All eighty LEDs may be set using only forty consecutive
+         * instructions, without having to send any key addresses.
+         */
 
+        //MIDI channel 3 note-on message
+        ShortMessage msg = new ShortMessage();
+        try {
+            msg.setMessage(ShortMessage.NOTE_ON, 3, 0, 0);
+        }
+        catch(InvalidMidiDataException e) {
+            }
+        receiver.send(msg,0);
+
+        //Expectes colors.lenght to be 80!
+        //Note that this method will update 2 leds at a time
+        for(int i=0, l= colors.length; i<l;i+=2) {
+            receiver.sendShortMessage((byte)0x92, colors[i].code(), colors[i+1].code());
+        }
+
+        //80h, 90h, or B0h.
+        receiver.sendShortMessage((byte)0x80,(byte)0,(byte)0);
+
+    }
     /***
      * This command sets the LEDs under the top row of round buttons
      * @param controlIx A number between 0 and 7 (0 is the left-most control button on the top row).
@@ -240,7 +280,7 @@ public class LaunchPadMini implements LaunchPadListener {
      * Clean-up operations executed when when
      * the parent sketch shuts down.
      */
-    public void close() {
+    public void dispose() {
         try {
             deviceOut.getReceiver().send(Utils.getResetMessage(), 0);
         } catch (MidiUnavailableException e) {

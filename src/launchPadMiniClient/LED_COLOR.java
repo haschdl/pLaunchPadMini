@@ -1,6 +1,7 @@
 package launchPadMiniClient;
 
-import processing.core.PApplet;
+import java.security.SecureRandom;
+import java.util.Arrays;
 
 /**
  * Hexadecimal values representing the possible combinations of color and intensity of
@@ -31,12 +32,16 @@ public enum LED_COLOR {
     AMBER_FULL(0x3F),
     YELLOW_FULL(0x3E),
     RED_LOW(0x0D),
-    RED_FULL(0x0F);
+    RED_FULL(0x0F),
+    RED_FLASHING(0x0B),
+    AMBER_FLASHING(0x3B),
+    YELLOW_FLASHING(0x3A),
+    GREEN_FLASHING(0x38);
 
-
+    private static final SecureRandom random = new SecureRandom();
     private final byte code;
 
-    protected byte code() {
+    public byte code() {
         return code;
     }
 
@@ -50,6 +55,19 @@ public enum LED_COLOR {
      */
     public static LED_COLOR getRandom() {
         return Extensions.randomEnum(LED_COLOR.class);
+    }
+
+    /***
+     * Returns a random color.
+     * @param excludeOff True if {@link LED_COLOR#OFF} must not be part of the results.
+     * @return One of the eight possible colors. Does not include {@link LED_COLOR#OFF}.
+     *
+     */
+    public static LED_COLOR getRandom(boolean excludeOff) {
+        if (excludeOff)
+            return listOnlyColors[random.nextInt(listOnlyColors.length)];
+        else
+            return list[random.nextInt(list.length)];
     }
 
     /***
@@ -76,32 +94,36 @@ public enum LED_COLOR {
     }
 
     /**
-     * Returns the LED_COLOR as a Processing color. Note that the colors are a
+     * Returns the LED_COLOR as a RGB color, which can be used in Processing functions
+     * such as fill() and stroke(). Note that the colors are a
      * simple approximation, and meant for illustration purposes only.
-     * @return
+     *
+     * @return A color, in Processing format.
      */
     public int asColor() {
         switch (this) {
             case OFF:
                 return 0;
             case GREEN_LOW:
-                return Utils.color(0,125,0);
+                return Utils.color(182, 255, 119);
             case GREEN_FULL:
-                return Utils.color(0,255,0);
+                return Utils.color(0, 255, 90);
             case AMBER_LOW:
-                return Utils.color(178, 134, 0);
+                return Utils.color(255, 214, 4);
             case AMBER_FULL:
-                return Utils.color(231,194,81);
+                return Utils.color(231, 194, 81);
             case YELLOW_FULL:
-                return Utils.color(0,255,255);
+                return Utils.color(255, 255, 100);
             case RED_LOW:
-                return Utils.color(178, 33, 25);
+                return Utils.color(210, 73, 73);
             case RED_FULL:
                 return Utils.color(255, 28, 15);
         }
         return 0;
     }
+
     private static LED_COLOR[] list = LED_COLOR.values();
+    private static LED_COLOR[] listOnlyColors = Arrays.copyOfRange(LED_COLOR.values(), 1, list.length);
 
     public static LED_COLOR get(int i) {
         return list[i];

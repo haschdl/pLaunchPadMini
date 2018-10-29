@@ -2,12 +2,6 @@ import launchPadMiniClient.*;
 import processing.core.*;
 import processing.event.KeyEvent;
 
-import java.io.File;
-import java.util.ArrayList;
-
-
-import processing.sound.*;
-
 
 public class Sketch extends PApplet {
 
@@ -119,7 +113,7 @@ public class Sketch extends PApplet {
                 try {
                     stop();
                     if (controller != null)
-                        controller.close();
+                        controller.dispose();
                 } catch (Exception ex) {
                     ex.printStackTrace(); // not much else to do at this point
                 }

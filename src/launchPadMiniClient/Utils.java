@@ -1,5 +1,7 @@
 package launchPadMiniClient;
 
+import launchPadMiniClient.receiver.MessageConstants;
+
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
@@ -10,15 +12,29 @@ import javax.sound.midi.ShortMessage;
  */
 public class Utils {
 
-    private static int RESET = 176;
+    private static byte b(int i) {
+        return (byte)i;
+    }
 
-    protected static MidiMessage getResetMessage() {
+    private static MidiMessage getMidiMessageNoException(byte data0, byte data1, byte data2) {
         try {
-            ShortMessage reset = new ShortMessage(RESET, 0, 0);
-            return reset;
+            return new ShortMessage(data0, data1, data2);
         } catch (InvalidMidiDataException e) {
             return null;
         }
+    }
+
+    protected static MidiMessage getResetMessage() {
+        return getMidiMessageNoException(MessageConstants.RESET);
+    }
+
+    private static MidiMessage getMidiMessageNoException(byte[] bytes) {
+     return getMidiMessageNoException(bytes[0],bytes[1],bytes[2]);
+    }
+
+    protected static MidiMessage getLedFlashMessage() {
+        return getMidiMessageNoException(b(0xB0), b(0x00), b(0x28));
+
     }
 
     /***
@@ -27,16 +43,15 @@ public class Utils {
      * @return The corresponding MIDI note of the controller.
      */
     public final static byte getNote(int ix) {
-        int row = (int)Math.floor(ix / 9);
+        int row = (int) Math.floor(ix / 9);
         int col = ix % 9;
-        return (byte) (16 * row+col);
+        return (byte) (16 * row + col);
     }
 
     public final static byte getNote(int row, int col, MATRIX_MODE mode) {
         if (mode == MATRIX_MODE.MATRIX_8x8 | mode == MATRIX_MODE.MATRIX_9x8) {
             return (byte) (16 * row + col);
-        }
-        else
+        } else
             return 0;
     }
 
@@ -48,7 +63,7 @@ public class Utils {
 
         int y = Integer.parseInt(yx.substring(0, 1));
         int x = Integer.parseInt(yx.substring(1, 2));
-        return new Location(x,y);
+        return new Location(x, y);
 
     }
 
