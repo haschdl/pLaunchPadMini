@@ -3,6 +3,8 @@
 A JAVA wrapper for the Novation Launch Pad aimed at using the MIDI pads as input for Processing sketches.
 You can attach pads to variables, and use the device to control and adjust your animation.
 
+![Advanced, Example 1](assets/LaunchpadMin_Advanced_Example_1.gif)
+
 * [Installation](#installation)
 * [Quick guide](#quick-guide)
 * [Compatibility](#compatibility)
