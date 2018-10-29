@@ -6,7 +6,7 @@ You can attach pads to variables, and use the device to control and adjust your 
 ![Advanced, Example 1](assets/LaunchpadMin_Advanced_Example_1.gif)
 
 * [Installation](#installation)
-* [Quick guide](#quick-guide)
+* [Quick guide and examples](#quick-guide)
 * [Compatibility](#compatibility)
 * [Limitations and further development](#limitations-and-further-development) 
 
@@ -23,8 +23,6 @@ See [Examples](../examples/README.md) for a quick introduction on how to use the
 from `File -> Examples... -> Contributed Libraries ->  Novation LaunchPadMini client`.
 
 ![](/assets/LaunchpadMin_Example_4.gif)
-
-
 
 # Compatibility
 The library was developed in Windows 10 and it has been tested with Processing 3.3 
