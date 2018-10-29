@@ -8,7 +8,7 @@
 
 File:  Basics_1_LED_Colors.pde
 
-Run the sketch and click on the sketch to switch across the examples. 
+Run the sketch and click on the screen to switch across the examples. See below images for the examples 4 to 6.
 
 ### 4: Animation
 
@@ -49,3 +49,8 @@ Looping across whole matrix with random color (`LED_COLOR.getRandom()`).
 ![Example 2](../.github/assets/example-padmode-loop.jpg)
 
 ## Advanced 1 - Audio analyzer
+This sample uses the controller to show the audio levels for 8 frequence bands. It requires the contributed library Minim.
+See video [here](https://www.reddit.com/r/processing/comments/9rdeby/some_tests_with_launchpad_mini_for_processing_got/)  
+
+![Advanced, Example 1](../.github/assets/LaunchpadMin_Advanced_Example_1.gif)
+
