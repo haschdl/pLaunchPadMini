@@ -51,7 +51,15 @@ Looping across whole matrix with random color (`LED_COLOR.getRandom()`).
 
 ## Basics 3 - Events
 
-![Example 2](../.github/assets/example-padmode-loop.jpg)
+This examples shows how to use `launchPadMiniPadChanged`, an event 
+which is triggered when a pad is pressed. You get the coordinates 
+of the button in the arguments of the method.
+
+```java
+void launchPadMiniPadChanged(int col, int row) {
+  println(String.format("Pad changed! Column: %d Row: %d", col, row));
+}
+```
 
 
 ## Advanced 1 - Audio analyzer
