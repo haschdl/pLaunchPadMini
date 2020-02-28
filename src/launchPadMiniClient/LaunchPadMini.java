@@ -8,7 +8,6 @@ import processing.core.*;
 import javax.sound.midi.*;
 import java.lang.reflect.*;
 
-import static processing.core.PApplet.parseByte;
 import static processing.core.PApplet.println;
 
 /***
@@ -25,7 +24,7 @@ public class LaunchPadMini implements LaunchPadListener {
 
     private Method controllerChangedEventMethod, padChangedEventMethod;
     private static final String controlChangedEventName = "launchControllerChanged";
-    private static final String padChangedEventName = "launchControllerPadChanged";
+    private static final String padChangedEventName = "launchPadMiniPadChanged";
 
 
     private MidiDevice deviceIn;
@@ -74,7 +73,7 @@ public class LaunchPadMini implements LaunchPadListener {
 
         try {
             padChangedEventMethod =
-                    parent.getClass().getMethod(padChangedEventName);
+                    parent.getClass().getDeclaredMethod(padChangedEventName, new Class[]{int.class, int.class});
         } catch (Exception e) {
             // no such method, or an error.. which is fine, just ignore
         }
@@ -261,11 +260,11 @@ public class LaunchPadMini implements LaunchPadListener {
         }
     }
 
-    public void padChanged(int ix) {
+    public void padChanged(int col, int row) {
         if (padChangedEventMethod != null) {
             try {
                 //controllerChangedEventMethod.invoke(parent, new Object[]{this});
-                padChangedEventMethod.invoke(parent, ix);
+                padChangedEventMethod.invoke(parent,col, row);
             } catch (Exception e) {
                 System.err.println("Disabling " + padChangedEventName + "() for " + this.getClass().getName() +
                         " because of an error.");
@@ -296,6 +295,7 @@ public class LaunchPadMini implements LaunchPadListener {
         if (this.LogMode == LOG_MODE.VERBOSE)
             println(String.format("Pad pressed at (%d,%d)! Changing color...", col, row));
 
+        padChanged(col, row);
 
         if (pad_mode == PAD_MODE.TOGGLE)
             togglePad(col, row);

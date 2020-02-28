@@ -102,9 +102,11 @@ public class Sketch extends PApplet {
 
     @Override
     public void keyTyped(KeyEvent event) {
-
     }
 
+    void launchPadMiniPadChanged(int col, int row) {
+        println(String.format("Pad changed! Column: %d Row: %d", col, row));
+    }
 
     private void prepareExitHandler() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {

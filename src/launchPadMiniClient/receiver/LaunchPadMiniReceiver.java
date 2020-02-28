@@ -1,14 +1,10 @@
 package launchPadMiniClient.receiver;
-
 import launchPadMiniClient.*;
-
 import javax.sound.midi.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import static processing.core.PApplet.println;
-
 
 /**
  * An implementation of @see javax.sound.midi.Receiver
@@ -19,12 +15,12 @@ public class LaunchPadMiniReceiver implements Receiver {
     private LaunchPadMini parent;
     private MidiDevice device;
 
-    private static final String padChangedEventName = "launchControllerPadChanged";
+    private static final String padChangedEventName = "launchPadMiniPadChanged";
 
     public LaunchPadMiniReceiver(LaunchPadMini parent, MidiDevice device) {
         this.parent = parent;
         this.device = device;
-        listeners = new ArrayList<LaunchPadListener>();
+        listeners = new ArrayList<>();
     }
     public void addListener(LaunchPadListener toAdd) {
         listeners.add(toAdd);
@@ -41,7 +37,7 @@ public class LaunchPadMiniReceiver implements Receiver {
         byte[] lastMessage = message.getMessage();
 
         if(parent.LogMode == LOG_MODE.VERBOSE)
-            System.out.println(String.format("[Receiver] Last message:%d,%d,%d", lastMessage[0], lastMessage[1], lastMessage[2]));
+            System.out.println(String.format("[RECEIVER] Last message:%d,%d,%d", lastMessage[0], lastMessage[1], lastMessage[2]));
 
         if (lastMessage[0] == -112 && lastMessage[2] == 127) { //PAD, Note ON (lastMessage[2] = 127
             Location loc = Utils.getLocation(lastMessage[1]);
@@ -50,8 +46,7 @@ public class LaunchPadMiniReceiver implements Receiver {
                 hl.padPressed(loc.col,loc.row);
 
             if (parent.LogMode == LOG_MODE.VERBOSE) {
-
-                println(String.format("[RECEIVER] You pressed (x,y) = (%d,%d)", loc.col, loc.row    ));
+                println(String.format("[RECEIVER] You pressed (x,y) = (%d,%d)", loc.col, loc.row));
             }
         }
     }

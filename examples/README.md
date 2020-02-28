@@ -2,6 +2,7 @@
 
 * [Basics 1 - LED Colors](#basics-1---LED-colors)
 * [Basics 2 - Pad mode](#basics-2---pad-mode)
+* [Basics 3 - Events](#basics-3---events)
 * [Advanced 1 - Audio Analyzer](#advanced-1--audio-analyzer)
 
 ## Basics 1 - LED Colors
@@ -47,6 +48,11 @@ Looping across whole matrix with random color (`LED_COLOR.getRandom()`).
 ## Basics 2 - Pad mode
 
 ![Example 2](../.github/assets/example-padmode-loop.jpg)
+
+## Basics 3 - Events
+
+![Example 2](../.github/assets/example-padmode-loop.jpg)
+
 
 ## Advanced 1 - Audio analyzer
 This sample uses the controller to show the audio levels for 8 frequence bands. It requires the contributed library Minim.
