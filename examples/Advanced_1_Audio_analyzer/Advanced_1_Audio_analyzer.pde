@@ -44,14 +44,13 @@ public void setup() {
 
   try {
     controller = new LaunchPadMini(this);
-
     //controller.turnOnAllLeds(BRIGHTNESS.LOW);
     controller.setLedColor(3, 0, LED_COLOR.RED_FULL);
     controller.reset();
   } 
-  catch (Exception e) {
-    println(e);
-    System.exit(0);
+  catch(Exception e) {
+    println("It looks like Launch Pad MINI is not connected to this computer :(");
+    exit();
   }
 
   // Calculate the width of the rects depending on how many bands we have
@@ -65,7 +64,7 @@ public void setup() {
   // loop the file
 
   soundFile.loop();
-    soundFile.skip(22000);
+  soundFile.skip(22000);
 
   fftLin = new FFT( soundFile.bufferSize(), soundFile.sampleRate() );
 

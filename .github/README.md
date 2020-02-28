@@ -15,8 +15,28 @@ You can attach pads to variables, and use the device to control and adjust your 
 ## From Processing editor
 In Processing, go to `Sketch`, `Import library...`, `Add library`. Search for "Novation Launch Controller client" and once found, click `Install`.
 ## Manual installation
-Copy the file pLaunchController.jar to a folder `code` inside your sketch. This method makes the library available to an individual sketch.
-If you intend to make the library available to all sketches, unzip the pLaunchController.zip file to the libraries of your Processing installation (you can see the default skecthbook location in File -> Preferences).
+
+### Installing to all sketches
+1. Download the ZIP file from the latest release at https://github.com/haschdl/pLaunchPadMini/releases/latest
+
+2. Open Processing installation folder, and locate the *libraries* folder
+
+3. Unzip launchPadMiniClient.zip into the *libraries* folder. The folder structure must look like:
+    ```
+    /tools
+    /libraries
+        /...
+        /launchPadMiniClient
+            /library
+            /examples
+            /reference
+            library.properties
+    ```
+
+
+### Trying out in a single sketch
+Copy the file launchPadMiniClient.jar to a folder `code` inside your sketch. This method makes the library available to an individual sketch.
+If you intend to make the library available to all sketches, follow the steps in *Installing to all sketches*.
 
 # Quick guide
 See [Examples](../examples/README.md) for a quick introduction on how to use the library. Once you install the library from Processing, you can also run the examples

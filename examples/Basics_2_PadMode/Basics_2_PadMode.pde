@@ -1,8 +1,8 @@
 /** //<>//
  * This is a introduction to Processing library Novation Launch Pad Mini.
- * 
+ *
  * 26.10.2010, Half Scheidl
- * 
+ *
  *
  */
 // Example of the library pLaunchController. This sketch is a good way to test
@@ -21,11 +21,11 @@ void setup() {
 
   try {
     controller = new LaunchPadMini(this);
-
     controller.LogMode = LOG_MODE.VERBOSE;
   }
   catch(Exception e) {
-    println("Unfortunately we could not detect that Launch Pad MINI is connected to this computer :(");
+    println("It looks like Launch Pad MINI is not connected to this computer :(");
+    exit();
   }
   textAlign(CENTER);
 }

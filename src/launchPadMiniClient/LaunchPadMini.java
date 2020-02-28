@@ -18,51 +18,63 @@ import static processing.core.PApplet.println;
  */
 public class LaunchPadMini implements LaunchPadListener {
 
+    public static final int PAD_COUNT = 81;
     private static final String DEVICE_NAME = "Launchpad Mini";
-
-    public LOG_MODE LogMode = LOG_MODE.ERROR;
-
-    private Method controllerChangedEventMethod, padChangedEventMethod;
     private static final String controlChangedEventName = "launchControllerChanged";
     private static final String padChangedEventName = "launchPadMiniPadChanged";
-
-
+    public LOG_MODE LogMode = LOG_MODE.ERROR;
+    public MATRIX_MODE matrix_mode = MATRIX_MODE.MATRIX_8x8;
+    public PAD_MODE pad_mode = PAD_MODE.TOGGLE;
+    private Method controllerChangedEventMethod, padChangedEventMethod;
     private MidiDevice deviceIn;
     private MidiDevice deviceOut;
     private LaunchPadMiniReceiver receiver;
-
-    public static final int PAD_COUNT = 81;
-
-    public MATRIX_MODE matrix_mode = MATRIX_MODE.MATRIX_8x8;
-    public PAD_MODE pad_mode = PAD_MODE.TOGGLE;
     private PApplet parent;
 
     private LedMatrix matrix = new LedMatrix(PAD_COUNT);
 
-
-    public LaunchPadMini(PApplet parent) throws MidiUnavailableException {
+    public LaunchPadMini(PApplet parent) throws LaunchPadNotConnectedException {
         this.parent = parent;
 
         MidiDevice.Info[] infos = MidiSystem.getMidiDeviceInfo();
         for (MidiDevice.Info info : infos) {
 
             if (info.getName().equals(DEVICE_NAME)) {
-                MidiDevice device = MidiSystem.getMidiDevice(info);
-                if (info.getClass().getName().equals("com.sun.media.sound.MidiInDeviceProvider$MidiInDeviceInfo")) {
-                    deviceIn = device;
-                    println(String.format("Connected to %s MIDI Input.", DEVICE_NAME));
-                } else {
-                    println(String.format("Connected to %s MIDI Output.", DEVICE_NAME));
-                    deviceOut = device;
+                try {
+                    MidiDevice device = MidiSystem.getMidiDevice(info);
+                    if (info.getClass().getName().equals("com.sun.media.sound.MidiInDeviceProvider$MidiInDeviceInfo")) {
+                        deviceIn = device;
+                        println(String.format("Connected to %s MIDI Input.", DEVICE_NAME));
+                    } else {
+                        println(String.format("Connected to %s MIDI Output.", DEVICE_NAME));
+                        deviceOut = device;
+                    }
+                } catch (MidiUnavailableException e) {
+                    throw new LaunchPadNotConnectedException();
                 }
             }
         }
 
         if (deviceIn == null || deviceOut == null) {
-            println(String.format("%s not connected!", DEVICE_NAME));
-            return;
+            throw new LaunchPadNotConnectedException();
         }
 
+        try {
+            deviceIn.open();
+            deviceOut.open();
+
+            receiver = new LaunchPadMiniReceiver(this, deviceOut);
+            receiver.addListener(this);
+
+            deviceIn.getTransmitter().setReceiver(receiver);
+
+            println("Resetting the controller...");
+            reset();
+
+            println(DEVICE_NAME + " ready!");
+        } catch (MidiUnavailableException e) {
+            throw new LaunchPadNotConnectedException();
+        }
         try {
             controllerChangedEventMethod =
                     parent.getClass().getMethod(controlChangedEventName);
@@ -70,29 +82,12 @@ public class LaunchPadMini implements LaunchPadListener {
             // no such method, or an error.. which is fine, just ignore
         }
 
-
         try {
             padChangedEventMethod =
                     parent.getClass().getDeclaredMethod(padChangedEventName, new Class[]{int.class, int.class});
         } catch (Exception e) {
             // no such method, or an error.. which is fine, just ignore
         }
-
-
-        deviceIn.open();
-        deviceOut.open();
-
-        receiver = new LaunchPadMiniReceiver(this, deviceOut);
-        receiver.addListener(this);
-
-        deviceIn.getTransmitter().setReceiver(receiver);
-
-
-        println("Resetting the controller...");
-        reset();
-
-
-        println(DEVICE_NAME + " ready!");
     }
 
     /***
@@ -178,8 +173,6 @@ public class LaunchPadMini implements LaunchPadListener {
         //padChanged(ix);
     }
 
-
-
     public void setLedColor(int x, int y, LED_COLOR color) {
         if (x > 9 || y > 9)
             throw new IllegalArgumentException(String.format("Both x and y must be smaller than 9 (0-8). x: %d  y:%d", x, y));
@@ -187,11 +180,9 @@ public class LaunchPadMini implements LaunchPadListener {
         if (matrix.get(x, y) == color)
             return;
 
-
         if (matrix_mode == MATRIX_MODE.MATRIX_8x8 || matrix_mode == MATRIX_MODE.MATRIX_9x8) {
             receiver.setLedColor(x, y, color);
             matrix.set(x, y, color);
-
         } else if (matrix_mode == MATRIX_MODE.MATRIX_9x9) {
             //First row is control buttons
             matrix.set(x, y, color);
@@ -222,21 +213,20 @@ public class LaunchPadMini implements LaunchPadListener {
         ShortMessage msg = new ShortMessage();
         try {
             msg.setMessage(ShortMessage.NOTE_ON, 3, 0, 0);
+        } catch (InvalidMidiDataException e) {
         }
-        catch(InvalidMidiDataException e) {
-            }
-        receiver.send(msg,0);
+        receiver.send(msg, 0);
 
         //Expectes colors.lenght to be 80!
         //Note that this method will update 2 leds at a time
-        for(int i=0, l= colors.length; i<l;i+=2) {
-            receiver.sendShortMessage((byte)0x92, colors[i].code(), colors[i+1].code());
+        for (int i = 0, l = colors.length; i < l; i += 2) {
+            receiver.sendShortMessage((byte) 0x92, colors[i].code(), colors[i + 1].code());
         }
 
         //80h, 90h, or B0h.
-        receiver.sendShortMessage((byte)0x80,(byte)0,(byte)0);
-
+        receiver.sendShortMessage((byte) 0x80, (byte) 0, (byte) 0);
     }
+
     /***
      * This command sets the LEDs under the top row of round buttons
      * @param controlIx A number between 0 and 7 (0 is the left-most control button on the top row).
@@ -264,7 +254,7 @@ public class LaunchPadMini implements LaunchPadListener {
         if (padChangedEventMethod != null) {
             try {
                 //controllerChangedEventMethod.invoke(parent, new Object[]{this});
-                padChangedEventMethod.invoke(parent,col, row);
+                padChangedEventMethod.invoke(parent, col, row);
             } catch (Exception e) {
                 System.err.println("Disabling " + padChangedEventName + "() for " + this.getClass().getName() +
                         " because of an error.");
@@ -273,7 +263,6 @@ public class LaunchPadMini implements LaunchPadListener {
             }
         }
     }
-
 
     /***
      * Clean-up operations executed when when
@@ -301,7 +290,6 @@ public class LaunchPadMini implements LaunchPadListener {
             togglePad(col, row);
         else if (pad_mode == PAD_MODE.LOOP)
             updatePadToNext(col, row);
-
     }
 
     public void updatePadToNext(int col, int row) {

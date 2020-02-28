@@ -9,8 +9,6 @@
  *
  */
 
-
-
 import launchPadMiniClient.*;
 LaunchPadMini controller;
 
@@ -25,7 +23,7 @@ void setup() {
     controller = new LaunchPadMini(this);
   }
   catch(Exception e) {
-    println("Unfortunately we could not detect that Launch Pad MINI is connected to this computer :(");
+    println("It looks like Launch Pad MINI is not connected to this computer :(");
     exit();
   }
   textAlign(LEFT);

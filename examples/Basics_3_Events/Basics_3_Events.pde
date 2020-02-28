@@ -15,12 +15,13 @@ void setup() {
 
   try {
     controller = new LaunchPadMini(this);
-
     controller.LogMode = LOG_MODE.VERBOSE;
   }
   catch(Exception e) {
-    println("Unfortunately we could not detect that Launch Pad MINI is connected to this computer :(");
+    println("It looks like Launch Pad MINI is not connected to this computer :(");
+    exit();
   }
+
   textAlign(CENTER);
 }
 void launchPadMiniPadChanged(int col, int row) {
