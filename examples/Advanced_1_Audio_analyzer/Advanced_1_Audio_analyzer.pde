@@ -60,9 +60,7 @@ public void setup() {
   //Load and play a soundfile and loop it. This has to be called
   // before the FFT is created.
   minim = new Minim(this);
-  soundFile = minim.loadFile("orchestra.wav", 1024);
-  //soundFile = minim.loadFile("Kanye West - Gold Digger ft. Jamie Foxx.mp3", 1024);
-  
+  soundFile = minim.loadFile("beat.aiff", 1024); 
 
   // loop the file
 
