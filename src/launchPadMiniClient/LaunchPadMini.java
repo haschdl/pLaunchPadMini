@@ -316,8 +316,10 @@ public class LaunchPadMini implements LaunchPadListener {
         switch (getPadMode()) {
             case TOGGLE:
                 togglePad(col, row);
+                break;
             case LOOP:
                 updatePadToNext(col, row);
+                break;
             case LOOP_ARRAY:
                 throw new UnsupportedOperationException("Pad mode LOOP_ARRAY is not yet implemented!");
             default:
