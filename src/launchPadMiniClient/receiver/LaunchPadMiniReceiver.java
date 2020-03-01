@@ -1,5 +1,7 @@
 package launchPadMiniClient.receiver;
+
 import launchPadMiniClient.*;
+
 import javax.sound.midi.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,18 +12,17 @@ import static processing.core.PApplet.println;
  * An implementation of @see javax.sound.midi.Receiver
  */
 public class LaunchPadMiniReceiver implements Receiver {
+    private static final String padChangedEventName = "launchPadMiniPadChanged";
     private List<LaunchPadListener> listeners;
-
     private LaunchPadMini parent;
     private MidiDevice device;
-
-    private static final String padChangedEventName = "launchPadMiniPadChanged";
 
     public LaunchPadMiniReceiver(LaunchPadMini parent, MidiDevice device) {
         this.parent = parent;
         this.device = device;
         listeners = new ArrayList<>();
     }
+
     public void addListener(LaunchPadListener toAdd) {
         listeners.add(toAdd);
     }
@@ -29,21 +30,21 @@ public class LaunchPadMiniReceiver implements Receiver {
     /**
      * Handles new messages coming *from* the Midi controller.
      *
-     * @param message A MidiMessage from the controller.
+     * @param message   A MidiMessage from the controller.
      * @param timeStamp Long value containing the timestamp.
      */
     @Override
     public void send(MidiMessage message, long timeStamp) {
         byte[] lastMessage = message.getMessage();
 
-        if(parent.LogMode == LOG_MODE.VERBOSE)
+        if (parent.LogMode == LOG_MODE.VERBOSE)
             System.out.println(String.format("[RECEIVER] Last message:%d,%d,%d", lastMessage[0], lastMessage[1], lastMessage[2]));
 
-        if (lastMessage[0] == -112 && lastMessage[2] == 127) { //PAD, Note ON (lastMessage[2] = 127
-            Location loc = Utils.getLocation(lastMessage[1]);
+        if (lastMessage[2] == 127) { //PAD, Note ON (lastMessage[2] = 127; ignore NOTE OFF, lastMessage[2]=-127
+            Location loc = Utils.getLocation(lastMessage);
             // Notify everybody that may be interested.
             for (LaunchPadListener hl : listeners)
-                hl.padPressed(loc.col,loc.row);
+                hl.padPressed(loc.col, loc.row);
 
             if (parent.LogMode == LOG_MODE.VERBOSE) {
                 println(String.format("[RECEIVER] You pressed (x,y) = (%d,%d)", loc.col, loc.row));
@@ -57,18 +58,18 @@ public class LaunchPadMiniReceiver implements Receiver {
         String y_coor = "" + row;
         String yx_coor = y_coor + x_coor;
         byte note = (byte) Integer.parseInt(yx_coor, 16);
-
-        setLedColor(note, color);
+        byte[] message = new byte[]{0, 0, note};
+        setLedColor(message, color);
     }
 
-    private void setLedColor(byte note , LED_COLOR color) {
+    private void setLedColor(byte[] midiMessage, LED_COLOR color) {
 
         try {
             if (parent.LogMode == LOG_MODE.VERBOSE) {
-                Location loc = Utils.getLocation(note);
-                System.out.println(String.format("[RECEIVER] Sending LED ON message.Location: %d,%d Note: %d ", loc.col, loc.row, note));
+                Location loc = Utils.getLocation(midiMessage);
+                System.out.println(String.format("[RECEIVER] Sending LED ON message.Location: %d,%d Note: %d ", loc.col, loc.row, midiMessage[2]));
             }
-            MidiMessage ledOnMsg = new ShortMessage((byte) 0x90, note, color.code());
+            MidiMessage ledOnMsg = new ShortMessage((byte) 0x90, midiMessage[2], color.code());
             device.getReceiver().send(ledOnMsg, 0);
         } catch (Exception e) {
             if (parent.LogMode == LOG_MODE.VERBOSE)
@@ -90,13 +91,10 @@ public class LaunchPadMiniReceiver implements Receiver {
             //(cursor up/learn) is 68h (104 in decimal), and the controller number increases from left to right.
             MidiMessage ledOnMsg = new ShortMessage((byte) 0xB0, (byte) (0x68 + controlIx), color.code());
             device.getReceiver().send(ledOnMsg, 0);
-
         } catch (Exception e) {
             System.out.println("Error sending Midi message: " + e);
         }
     }
-
-
 
     /***
      * Sends a generic 3-byte MIDI message to the controller.
@@ -120,14 +118,11 @@ public class LaunchPadMiniReceiver implements Receiver {
      * @param data An array containing three bytes.
      */
     public void sendShortMessage(byte[] data) {
-        sendShortMessage(data[0],data[1],data[2]);
+        sendShortMessage(data[0], data[1], data[2]);
     }
-
 
     @Override
     public void close() {
 
     }
-
-
 }

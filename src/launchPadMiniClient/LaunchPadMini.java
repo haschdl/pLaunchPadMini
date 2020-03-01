@@ -4,10 +4,14 @@ import launchPadMiniClient.receiver.LaunchPadListener;
 import launchPadMiniClient.receiver.LaunchPadMiniReceiver;
 import launchPadMiniClient.receiver.MessageConstants;
 import processing.core.*;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import javax.sound.midi.*;
 import java.lang.reflect.*;
+import java.util.*;
 
+import static launchPadMiniClient.PAD_MODE.*;
+import static launchPadMiniClient.PAD_MODE.TOGGLE;
 import static processing.core.PApplet.println;
 
 /***
@@ -18,20 +22,19 @@ import static processing.core.PApplet.println;
  */
 public class LaunchPadMini implements LaunchPadListener {
 
-    public static final int PAD_COUNT = 81;
     private static final String DEVICE_NAME = "Launchpad Mini";
     private static final String controlChangedEventName = "launchControllerChanged";
     private static final String padChangedEventName = "launchPadMiniPadChanged";
     public LOG_MODE LogMode = LOG_MODE.ERROR;
-    public MATRIX_MODE matrix_mode = MATRIX_MODE.MATRIX_8x8;
-    public PAD_MODE pad_mode = PAD_MODE.TOGGLE;
+    public MATRIX_MODE matrix_mode = MATRIX_MODE.MATRIX_9x9;
+    private PAD_MODE padMode = TOGGLE;
     private Method controllerChangedEventMethod, padChangedEventMethod;
     private MidiDevice deviceIn;
     private MidiDevice deviceOut;
     private LaunchPadMiniReceiver receiver;
     private PApplet parent;
 
-    private LedMatrix matrix = new LedMatrix(PAD_COUNT);
+    private LedMatrix matrix = new LedMatrix(matrix_mode);
 
     public LaunchPadMini(PApplet parent) throws LaunchPadNotConnectedException {
         this.parent = parent;
@@ -98,7 +101,7 @@ public class LaunchPadMini implements LaunchPadListener {
     public void reset() {
         try {
             deviceOut.getReceiver().send(Utils.getResetMessage(), 0);
-            for (int i = 0; i < PAD_COUNT; i++) {
+            for (int i = 0; i < Constants.BUTTON_COUNT; i++) {
                 matrix.set(i, LED_COLOR.OFF);
             }
         } catch (MidiUnavailableException e) {
@@ -113,11 +116,27 @@ public class LaunchPadMini implements LaunchPadListener {
      * @return True if the pad is "on", False otherwise.
      */
     public boolean getPad(int ix) {
-        return (matrix.get(ix) != LED_COLOR.OFF);
+        return (matrix.get(ix).ledColor != LED_COLOR.OFF);
     }
 
-    public LED_COLOR getPad(int col, int row) {
+    /***
+     * The list of {@link Pad} which are not turned off.
+     * Alternative, you can get the status of a pad a int
+     * value with {@link LaunchPadMini#getPadInt(int)}
+     * @return List of {@link Pad} with are not turned off.
+     */
+    public ArrayList<Pad> getPadsOn() {
+        ArrayList<Pad> result = new ArrayList<>();
+        int l = matrix.getAll().size();
+        for (int i = 0; i < l; i++) {
+            Pad p = matrix.getAll().get(i);
+            if (p.ledColor != LED_COLOR.OFF)
+                result.add(p);
+        }
+        return result;
+    }
 
+    public Pad getPad(int col, int row) {
         return matrix.get(col, row);
     }
 
@@ -173,20 +192,29 @@ public class LaunchPadMini implements LaunchPadListener {
         //padChanged(ix);
     }
 
+    /**
+     * Sets the pad color by index, according to the {@link LaunchPadMini#matrix_mode}.
+     * The valid range for index depends on the chosen {@link MATRIX_MODE}.
+     *
+     * @param index
+     */
+    public void setLedColor(int index, LED_COLOR color) {
+        throw new NotImplementedException();
+    }
+
     public void setLedColor(int x, int y, LED_COLOR color) {
         if (x > 9 || y > 9)
             throw new IllegalArgumentException(String.format("Both x and y must be smaller than 9 (0-8). x: %d  y:%d", x, y));
 
-        if (matrix.get(x, y) == color)
+        if (matrix.get(x, y).ledColor == color)
             return;
 
-        if (matrix_mode == MATRIX_MODE.MATRIX_8x8 || matrix_mode == MATRIX_MODE.MATRIX_9x8) {
+        if (matrix_mode == MATRIX_MODE.MATRIX_8x8) {
             receiver.setLedColor(x, y, color);
             matrix.set(x, y, color);
         } else if (matrix_mode == MATRIX_MODE.MATRIX_9x9) {
             //First row is control buttons
             matrix.set(x, y, color);
-
             if (y == 0)
                 setControlColor((byte) x, color);
             else
@@ -285,16 +313,43 @@ public class LaunchPadMini implements LaunchPadListener {
             println(String.format("Pad pressed at (%d,%d)! Changing color...", col, row));
 
         padChanged(col, row);
-
-        if (pad_mode == PAD_MODE.TOGGLE)
-            togglePad(col, row);
-        else if (pad_mode == PAD_MODE.LOOP)
-            updatePadToNext(col, row);
+        switch (getPadMode()) {
+            case TOGGLE:
+                togglePad(col, row);
+            case LOOP:
+                updatePadToNext(col, row);
+            case LOOP_ARRAY:
+                throw new UnsupportedOperationException("Pad mode LOOP_ARRAY is not yet implemented!");
+            default:
+                throw new UnsupportedOperationException("The pad mode is not implemented: " + getPadMode());
+        }
     }
 
-    public void updatePadToNext(int col, int row) {
-        setLedColor(col, row, matrix.get(col, row).next());
+    private void updatePadToNext(int col, int row) {
+        setLedColor(col, row, matrix.get(col, row).ledColor.next());
         midiLaunchControllerChanged();
         //padChanged(ix);
+    }
+
+    /**
+     * Returns a visual representation of the device which can be printed to the console.
+     * Used for troubleshooting purposes.
+     *
+     * @return A string with the matrix, similar to a table.
+     */
+    public String printMatrix() {
+        return this.matrix.toString();
+    }
+
+    public Iterable<Pad> getPads() {
+        return this.matrix.getAll();
+    }
+
+    public PAD_MODE getPadMode() {
+        return padMode;
+    }
+
+    public void setPadMode(PAD_MODE padMode) {
+        this.padMode = padMode;
     }
 }

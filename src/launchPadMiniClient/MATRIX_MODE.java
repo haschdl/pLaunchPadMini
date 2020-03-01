@@ -33,7 +33,29 @@ public enum MATRIX_MODE {
      *
      */
     MATRIX_8x8,
-    MATRIX_9x8,
+
+    /**
+     * Treats the controller as a matrix of 9x9 cells. You can set the color of a pad
+     * by using {@link LaunchPadMini#setLedColor(int, LED_COLOR)}, where ix between
+     * 0 and 79 (see diagram).
+     * If you want to lit the round buttons on top you must call
+     * {@link LaunchPadMini#setControlColor(byte, LED_COLOR ) setControlColor}.
+     *
+     *      ___ ___ ___ ___ ___ ___ ___ ___
+     *     ( 0)( 1)( 2)( 3)( 4)( 5)( 6)( 7)|(-)
+     *     | 8 | 9| 10| 11| 12| 13| 14| 15| (16)
+     *     |17 |18| 19| 20| 21| 22| 23| 24| (25)
+     *     |26|   |   |   |   |   |   |   | (34)
+     *     |35|   |   |   |   |   |   |   | (43)
+     *     |44|   |   |   |   |   |   |   | (52)
+     *     |53|   |   |   |   |   |   |...| (61)
+     *     |62|   |   |   |   |   |   | ..| (70)
+     *     |71| 72| 73| 74| 75| 76| 77| 78| (79)
+     *     |------------------------------------
+     *
+     *
+     *
+     */
     MATRIX_9x9
 
 

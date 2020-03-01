@@ -6,14 +6,13 @@ import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 
-
 /***
  * Helper methods to communicate with MIDI controller.
  */
 public class Utils {
 
     private static byte b(int i) {
-        return (byte)i;
+        return (byte) i;
     }
 
     private static MidiMessage getMidiMessageNoException(byte data0, byte data1, byte data2) {
@@ -29,12 +28,11 @@ public class Utils {
     }
 
     private static MidiMessage getMidiMessageNoException(byte[] bytes) {
-     return getMidiMessageNoException(bytes[0],bytes[1],bytes[2]);
+        return getMidiMessageNoException(bytes[0], bytes[1], bytes[2]);
     }
 
     protected static MidiMessage getLedFlashMessage() {
         return getMidiMessageNoException(b(0xB0), b(0x00), b(0x28));
-
     }
 
     /***
@@ -49,14 +47,28 @@ public class Utils {
     }
 
     public final static byte getNote(int row, int col, MATRIX_MODE mode) {
-        if (mode == MATRIX_MODE.MATRIX_8x8 | mode == MATRIX_MODE.MATRIX_9x8) {
+        if (mode == MATRIX_MODE.MATRIX_8x8) {
             return (byte) (16 * row + col);
         } else
             return 0;
     }
 
-    public final static Location getLocation(byte note) {
-        String yx = Integer.toHexString(note);
+    /**
+     * Returns a Location based on a MIDI message.
+     *
+     * @param note
+     * @return
+     */
+    public final static Location getLocation(byte[] message) {
+        short position = 0;
+
+        if (message[0] == -80) //top-row, control buttons
+            position = (short) (message[1] - 104);
+
+        if (message[0] == -112)
+            position = (short) (message[1]+16);
+
+        String yx = Integer.toHexString(position);
 
         if (yx.length() == 1)
             yx = "0" + yx;
@@ -64,9 +76,7 @@ public class Utils {
         int y = Integer.parseInt(yx.substring(0, 1));
         int x = Integer.parseInt(yx.substring(1, 2));
         return new Location(x, y);
-
     }
-
 
     public final static int color(int v1, int v2, int v3) {
         if (v1 > 255) {
@@ -89,6 +99,4 @@ public class Utils {
 
         return -16777216 | v1 << 16 | v2 << 8 | v3;
     }
-
-
 }

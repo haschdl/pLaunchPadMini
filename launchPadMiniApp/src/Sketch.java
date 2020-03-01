@@ -2,40 +2,31 @@ import launchPadMiniClient.*;
 import processing.core.*;
 import processing.event.KeyEvent;
 
-
 public class Sketch extends PApplet {
-
 
     LaunchPadMini controller;
 
-
     public static void main(String[] args) {
         PApplet.main(new String[]{"Sketch",});
-
     }
-
 
     public void settings() {
-        size(800, 800, P2D);
-
+        size(400, 400, P2D);
     }
-
 
     public void setup() {
         prepareExitHandler();
 
         try {
             controller = new LaunchPadMini(this);
-            controller.pad_mode = PAD_MODE.LOOP;
+            controller.setPadMode(PAD_MODE.LOOP);
             controller.LogMode = LOG_MODE.VERBOSE;
         } catch (Exception e) {
             println("Unfortunately we could not detect that Launch Pad MINI is connected to this computer :(");
+            exit();
         }
         textAlign(CENTER);
-
-
     }
-
 
     public void draw() {
 
@@ -43,65 +34,54 @@ public class Sketch extends PApplet {
         translate(20, 20);
         stroke(255);
         strokeWeight(3);
-        float s = width / 18; //2 times the number of buttons along the X axis
+        float s = width / (18 + 1); //2 times the number of buttons along the X axis
         translate(s / 2, s / 2);
-
-        drawControlButtoms(s);
         drawPads(s);
-
-
-    }
-
-
-    /**
-     * Draws the control buttons (round buttons on top row).
-     */
-    void drawControlButtoms(float s) {
-        fill(80);
-        //top row
-        for (int i = 0; i < 8; i++) {
-            ellipse(2 * s * (i % 8), 0, s, s);
-        }
     }
 
     /**
      * Draws the pads of the controller.
      */
     void drawPads(float s) {
-        translate(0, s * 2);
+        //translate(0, s * 2);
         rectMode(CENTER);
 
-        for (int col = 0; col < 9; col++) {
+        for (Pad pad : controller.getPads()) {
+            fill(255);
 
-            for (int row = 0; row < 8; row++) {
-                fill(255);
+            float x = 2 * s * pad.column;
+            float y = 2 * s * pad.row;
 
-                float x = 2 * s * col;
-                float y = 2 * s * row;
+            if (pad.column == 8 || pad.row == 0)
+                ellipse(x, y, s, s);
+            else
+                rect(x, y, s, s);
 
-                if (col < 8)
-                    rect(x, y, s, s);
-                else
+            if (pad.asBoolean()) {
+                fill(pad.ledColor.asColor());
+                if (pad.column == 8 || pad.row == 0)
                     ellipse(x, y, s, s);
-
-                LED_COLOR pad = controller.getPad(col, row);
-
-                if (pad.asBoolean()) {
-                    fill(pad.asColor());
-                    if (col < 8)
-                        rect(x, y, s, s);
-                    else
-                        ellipse(x, y, s, s);
-                }
-
-                fill(255);
-                text(round(row * 9 + col), x, y + s);
+                else
+                    rect(x, y, s, s);
             }
+
+            fill(255);
+            text(round(pad.row * 9 + pad.column), x, y + s);
         }
     }
 
     @Override
     public void keyTyped(KeyEvent event) {
+        println(event.getKey());
+        if (event.getKey() == 'm') {
+            println("The current matrix is: ");
+            println(controller.printMatrix());
+        }
+
+        if (event.getKey() == 'o') {
+            println("The list of activated pads is: ");
+            controller.getPadsOn().forEach(p  -> print(p.getPosition()));
+        }
     }
 
     void launchPadMiniPadChanged(int col, int row) {
@@ -119,7 +99,6 @@ public class Sketch extends PApplet {
                 } catch (Exception ex) {
                     ex.printStackTrace(); // not much else to do at this point
                 }
-
             }
         }));
     }
